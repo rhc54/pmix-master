@@ -315,6 +315,8 @@ static pmix_status_t harvest_envars(pmix_namespace_t *nptr,
     PMIX_LIST_DESTRUCT(&mcaparams);
     PMIX_CONSTRUCT(&mcaparams, pmix_list_t);
 
+    env_set_flag = getenv("OMPI_MCA_mca_base_env_list");
+
     /* harvest our local envars */
     if (NULL != mca_pmdl_ompi5_component.include) {
         pmix_output_verbose(2, pmix_pmdl_base_framework.framework_output,
