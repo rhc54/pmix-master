@@ -484,6 +484,9 @@ PMIX_EXPORT pmix_status_t PMIx_server_init(pmix_server_module_t *module,
     rinfo->gid = pmix_globals.gid;
     PMIX_RETAIN(pmix_globals.mypeer->info);
     pmix_client_globals.myserver->info = pmix_globals.mypeer->info;
+    /* setup the global vals objects */
+    PMIX_LOAD_PROCID(pmix_globals.myidval.data.proc,pmix_globals.myid.nspace, pmix_globals.myid.rank);
+    pmix_globals.myrankval.data.rank = pmix_globals.myid.rank;
 
     /* open the pmdl framework and select the active modules for this environment */
     if (PMIX_SUCCESS != (rc = pmix_mca_base_framework_open(&pmix_pmdl_base_framework, 0))) {

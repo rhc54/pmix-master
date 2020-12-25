@@ -189,8 +189,12 @@ int pmix_rte_init(uint32_t type,
 
     /* setup the globals structure */
     pmix_globals.pid = getpid();
-    memset(&pmix_globals.myid.nspace, 0, PMIX_MAX_NSLEN+1);
-    pmix_globals.myid.rank = PMIX_RANK_INVALID;
+    PMIX_LOAD_PROCID(&pmix_globals.myid, NULL,PMIX_RANK_INVALID);
+    pmix_globals.myidval.type = PMIX_PROC;
+    pmix_globals.myidval.data.proc = (pmix_proc_t*)malloc(sizeof(pmix_proc_t));
+    PMIX_LOAD_PROCID(pmix_globals.myidval.data.proc, NULL, PMIX_RANK_INVALID);
+    pmix_globals.myrankval.type = PMIX_PROC_RANK;
+    pmix_globals.myrankval.data.rank = PMIX_RANK_INVALID;
     PMIX_CONSTRUCT(&pmix_globals.events, pmix_events_t);
     pmix_globals.event_window.tv_sec = pmix_event_caching_window;
     pmix_globals.event_window.tv_usec = 0;

@@ -770,6 +770,9 @@ PMIX_EXPORT int PMIx_tool_init(pmix_proc_t *proc,
     /* cache the server in case we later want to call "set_server" on it */
     PMIX_RETAIN(pmix_client_globals.myserver);
     pmix_pointer_array_add(&pmix_server_globals.clients, pmix_client_globals.myserver);
+    /* setup the global vals objects */
+    PMIX_LOAD_PROCID(pmix_globals.myidval.data.proc,pmix_globals.myid.nspace, pmix_globals.myid.rank);
+    pmix_globals.myrankval.data.rank = pmix_globals.myid.rank;
 
     /* load into our own peer object */
     if (NULL == pmix_globals.mypeer->nptr->nspace) {

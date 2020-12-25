@@ -670,6 +670,9 @@ PMIX_EXPORT pmix_status_t PMIx_Init(pmix_proc_t *proc,
     }
     pmix_globals.mypeer->info->pname.nspace = strdup(proc->nspace);
     pmix_globals.mypeer->info->pname.rank = proc->rank;
+    /* setup the global vals objects */
+    PMIX_LOAD_PROCID(pmix_globals.myidval.data.proc, proc->nspace, proc->rank);
+    pmix_globals.myrankval.data.rank = proc->rank;
 
     /* select our psec compat module - the selection will be based
      * on the corresponding envars that should have been passed

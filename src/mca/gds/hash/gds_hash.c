@@ -2951,26 +2951,31 @@ static pmix_status_t hash_fetch(const pmix_proc_t *proc,
         return PMIX_ERR_INVALID_NAMESPACE;
     }
 
-    if (!PMIX_RANK_IS_VALID(proc->rank)) {
-        if (nodeinfo) {
-            rc = fetch_nodeinfo(key, &trk->nodeinfo, qualifiers, nqual, kvs);
-            if (PMIX_SUCCESS != rc && PMIX_RANK_WILDCARD == proc->rank) {
-                /* need to check internal as we might have an older peer */
-                ht = &trk->internal;
-                goto doover;
-            }
-            return rc;
-        } else if (appinfo) {
-            rc = fetch_appinfo(key, &trk->apps, qualifiers, nqual, kvs);
-            if (PMIX_SUCCESS != rc && PMIX_RANK_WILDCARD == proc->rank) {
-                /* need to check internal as we might have an older peer */
-                ht = &trk->internal;
-                goto doover;
-            }
-            return rc;
+    if (nodeinfo) {
+        rc = fetch_nodeinfo(key, &trk->nodeinfo, qualifiers, nqual, kvs);
+        if (PMIX_SUCCESS != rc && PMIX_RANK_WILDCARD == proc->rank) {
+            /* need to check internal as we might have an older peer */
+            ht = &trk->internal;
+            goto doover;
+        } else if (PMIX_RANK_IS_VALID(proc->rank)) {
+            /* could have been stored by rank */
+            goto checkrank;
         }
+        return rc;
+    } else if (appinfo) {
+        rc = fetch_appinfo(key, &trk->apps, qualifiers, nqual, kvs);
+        if (PMIX_SUCCESS != rc && PMIX_RANK_WILDCARD == proc->rank) {
+            /* need to check internal as we might have an older peer */
+            ht = &trk->internal;
+            goto doover;
+        } else if (PMIX_RANK_IS_VALID(proc->rank)) {
+            /* could have been stored by rank */
+            goto checkrank;
+        }
+       return rc;
     }
 
+  checkrank:
     /* fetch from the corresponding hash table - note that
      * we always provide a copy as we don't support
      * shared memory */
