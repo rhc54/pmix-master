@@ -66,6 +66,29 @@ pmix_gds_base_module_t* pmix_gds_base_assign_module(pmix_info_t *info, size_t ni
     return mod;
 }
 
+pmix_status_t pmix_gds_base_register_nspace(struct pmix_namespace_t *ns, int nlocalprocs,
+                                            pmix_info_t info[], size_t ninfo)
+{
+    pmix_gds_base_active_module_t *active;
+    pmix_status_t rc;
+
+    if (!pmix_gds_globals.initialized) {
+        return PMIX_ERR_INIT;
+    }
+
+    PMIX_LIST_FOREACH(active, &pmix_gds_globals.actives, pmix_gds_base_active_module_t) {
+        if (NULL == active->module->register_nspace) {
+            continue;
+        }
+        rc = active->module->register_nspace(ns, nlocalprocs, info, ninfo);
+        if (PMIX_SUCCESS != rc && PMIX_ERR_NOT_AVAILABLE != rc) {
+            return rc;
+        }
+    }
+
+    return PMIX_SUCCESS;
+}
+
 pmix_status_t pmix_gds_base_setup_fork(const pmix_proc_t *proc,
                                        char ***env)
 {

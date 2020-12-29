@@ -769,17 +769,9 @@ static pmix_status_t register_nspace(char *nspace,
     info = (pmix_info_t*)darray.array;
     ninfo = darray.size;
 
-    /* register nspace for each activate components */
-    PMIX_GDS_ADD_NSPACE(rc, nptr->nspace, nprocs, info, ninfo);
-    if (PMIX_SUCCESS == rc) {
-        /* store this data in our own GDS module - we will retrieve
-         * it later so it can be passed down to the launched procs
-         * once they connect to us and we know what GDS module they
-         * are using */
-        PMIX_GDS_CACHE_JOB_INFO(rc, pmix_globals.mypeer, nptr,
-                                info, ninfo);
-    }
-
+    /* register nspace for each activate component */
+    rc = pmix_gds_base_register_nspace((struct pmix_namespace_t*)nptr,
+                                       nprocs, info, ninfo);
     PMIX_DATA_ARRAY_DESTRUCT(&darray);
     return rc;
 }

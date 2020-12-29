@@ -108,7 +108,6 @@ int pmix_rte_init(uint32_t type,
     char *error = NULL, *evar;
     size_t n, m;
     char hostname[PMIX_MAXHOSTNAMELEN] = {0};
-    char *gds = NULL;
     pmix_info_t *iptr;
     size_t minfo;
     bool keepfqdn = false;
@@ -308,8 +307,6 @@ int pmix_rte_init(uint32_t type,
                 if (PMIX_SUCCESS != ret) {
                     goto return_error;
                 }
-            } else if (PMIX_CHECK_KEY(&info[n], PMIX_GDS_MODULE)) {
-                gds = info[n].value.data.string;
             } else if (PMIX_CHECK_KEY(&info[n], PMIX_NODE_INFO_ARRAY)) {
                 /* contains info about our node */
                 iptr = (pmix_info_t*)info[n].value.data.darray->array;
@@ -418,12 +415,6 @@ int pmix_rte_init(uint32_t type,
     }
 
     /* open the gds and select the active plugins */
-    if (NULL != gds) {
-        pmix_setenv("PMIX_MCA_gds", gds, true, &environ);
-    } else if (NULL != (evar = getenv("PMIX_GDS_MODULE"))) {
-        /* convert to an MCA param, but don't overwrite something already there */
-        pmix_setenv("PMIX_MCA_gds", evar, false, &environ);
-    }
     if (PMIX_SUCCESS != (ret = pmix_mca_base_framework_open(&pmix_gds_base_framework, 0)) ) {
         error = "pmix_gds_base_open";
         goto return_error;

@@ -141,6 +141,11 @@ PMIX_EXPORT
 pmix_status_t pmix_gds_base_modex_unpack_kval(pmix_gds_modex_key_fmt_t key_fmt,
                                               pmix_buffer_t *buf, char **kmap,
                                               pmix_kval_t *kv);
+
+PMIX_EXPORT
+pmix_status_t pmix_gds_base_register_nspace(struct pmix_namespace_t *ns, int nlocalprocs,
+                                            pmix_info_t info[], size_t ninfo);
+
 END_C_DECLS
 
 #endif

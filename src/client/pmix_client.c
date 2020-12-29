@@ -572,7 +572,11 @@ PMIX_EXPORT pmix_status_t PMIx_Init(pmix_proc_t *proc,
         /* anything else should just be cleared */
         pmix_unsetenv("PMIX_MCA_ptl", &environ);
     }
-
+    /* temporarily disable GDS MCA directive */
+    if (NULL != getenv("PMIX_MCA_gds")) {
+        pmix_unsetenv("PMIX_MCA_gds", &environ);
+    }
+    
     /* setup the runtime - this init's the globals,
      * opens and initializes the required frameworks */
     if (PMIX_SUCCESS != (rc = pmix_rte_init(PMIX_PROC_CLIENT, info, ninfo,

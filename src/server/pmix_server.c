@@ -315,6 +315,11 @@ PMIX_EXPORT pmix_status_t PMIx_server_init(pmix_server_module_t *module,
         /* anything else should just be cleared */
         pmix_unsetenv("PMIX_MCA_ptl", &environ);
     }
+    /* temporarily disable GDS MCA directive */
+    if (NULL != getenv("PMIX_MCA_gds")) {
+        pmix_unsetenv("PMIX_MCA_gds", &environ);
+    }
+
     /* init the parent procid to something innocuous */
     PMIX_LOAD_PROCID(&myparent, NULL, PMIX_RANK_UNDEF);
 
@@ -815,18 +820,16 @@ static void _register_nspace(int sd, short args, void *cbdata)
         }
     }
 
-    /* register nspace for each activate components */
-    PMIX_GDS_ADD_NSPACE(rc, nptr->nspace, cd->nlocalprocs, cd->info, cd->ninfo);
-    if (PMIX_SUCCESS != rc) {
-        goto release;
-    }
-
-    /* store this data in our own GDS module - we will retrieve
-     * it later so it can be passed down to the launched procs
-     * once they connect to us and we know what GDS module they
-     * are using */
-    PMIX_GDS_CACHE_JOB_INFO(rc, pmix_globals.mypeer, nptr,
-                            cd->info, cd->ninfo);
+    /* store this data in an appropriate place - the function will cycle
+     * in priority order across all active components that support
+     * register_nspace until someone picks it up. In the case where our
+     * clients are also using this version of the library, this method
+     * gives us the highest likelihood that the info will be stored on
+     * the component shared with the client - hopefully avoiding having
+     * to store the data again once the client connects and tells us
+     * the actual component they are using */
+    rc = pmix_gds_base_register_nspace((struct pmix_namespace_t*)nptr,
+                                       cd->nlocalprocs, cd->info, cd->ninfo);
     if (PMIX_SUCCESS != rc) {
         goto release;
     }
@@ -4093,7 +4096,7 @@ static pmix_status_t server_switchyard(pmix_peer_t *peer, uint32_t tag,
             PMIX_ERROR_LOG(PMIX_ERR_NOMEM);
             return PMIX_ERR_NOMEM;
         }
-        PMIX_GDS_REGISTER_JOB_INFO(rc, peer, reply);
+        PMIX_GDS_COLLECT_INFO(rc, peer, reply);
         if (PMIX_SUCCESS != rc) {
             PMIX_ERROR_LOG(rc);
             return rc;
